@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "start": "webpack-dev-server --mode development"
   },
   "keywords": [],
   "author": "",
