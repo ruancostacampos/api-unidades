@@ -12,6 +12,8 @@ console.log(process.env.BASEURL);
 const app = express();
 app.use(
     auth({
+      authRequired: false,
+      auth0Logout: true,
       issuerBaseURL: process.env.ISSUER,
       baseURL: process.env.BASEURL,
       clientID: process.env.CLIENTID,
