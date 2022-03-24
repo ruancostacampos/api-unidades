@@ -13,4 +13,4 @@ router.get('/api', async (req, res, next) =>{
   }
 });
 
-module.exports = app => app.use('/api/', auth(auth0.config), router);
+module.exports = app => app.use('/api/', router);
