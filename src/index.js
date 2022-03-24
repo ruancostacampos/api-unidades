@@ -1,32 +1,22 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config();
 const {auth} = require('express-openid-connect');
-
-
+const auth0 = require('../config/auth0');
+require('dotenv').config();
 
 console.log(process.env.BASEURL);
 
-
 const app = express();
-app.use(
-    auth({
-      authRequired: true,
-      auth0Logout: true,
-      issuerBaseURL: process.env.ISSUER,
-      baseURL: process.env.BASEURL,
-      clientID: process.env.CLIENTID,
-      secret: process.env.SECRET
-    })
-);
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}))
+app.use(auth(auth0.config));
 
 app.use((req, res, next) => {
 	//Qual site tem permissão de realizar a conexão, no exemplo abaixo está o "*" indicando que qualquer site pode fazer a conexão
-    res.header("Access-Control-Allow-Origin", "https://esus-server-monitor.herokuapp.com/");
+    res.header("Access-Control-Allow-Origin", process.env.BASEURL);
 	//Quais são os métodos que a conexão pode realizar na API
     res.header("Access-Control-Allow-Methods", 'GET,PUT,POST,DELETE');
     res.header("Access-Control-Allow-Credentials", 'true');
@@ -35,12 +25,19 @@ app.use((req, res, next) => {
     next();
 })
 
-
-app.get('/private', function (req, res) {
-    res.send('Secured Resource');
-});
-require('../controllers/authController')(app);
+app.use('/api', privateRoute);
 require('../controllers/unityController')(app);
 
 
+function privateRoute (req, res, next){
+  if(req.oidc.isAuthenticated()){
+    next();
+  }else{
+    res.status(401).json({message: 'Unauthorized'});
+    return;
+  }
+}
+
 app.listen(process.env.PORT || 4000);
+
+

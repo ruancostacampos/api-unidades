@@ -1,5 +1,4 @@
 const express = require('express');
-const res = require('express/lib/response');
 const Unity = require('../models/unity');
 const User = require('../models/user');
 const router = express.Router();
