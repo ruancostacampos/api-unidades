@@ -5,9 +5,17 @@ const router = express.Router();
 
 
 
-router.get('/', async (req, res) => {
+router.get(['/:cnes', '/'], async (req, res) => {
+  
+  var paramCnes = null;
 
-  unities = Unity.find({}, function (err, unities) {
+  if(req.params.cnes){
+    paramCnes = {cnes: req.params.cnes}
+  }else{
+    paramCnes = {}
+  }
+
+  unities = Unity.find(paramCnes, function (err, unities) {
     if(err) return res.status(400).json({message : "Some error ocurr."});
 
     if(unities.length == 0) return res.status(201).json("No unities found.");
@@ -19,6 +27,8 @@ router.get('/', async (req, res) => {
 });
 
 // # Essa é a rota que adiciona uma unidade # //
+
+
 router.post('/', async (req, res) => { 
   const {name, network_ip, public_ip, cnes} = req.body;
   const unity = await Unity.find({cnes});
@@ -39,9 +49,13 @@ router.post('/', async (req, res) => {
 router.put('/:cnes', async (req, res) => {
 
   const {cnes} = req.params;
-  const updatedUnity = await Unity.findOneAndUpdate({cnes : cnes}, req.body, {new : true});
-  return res.status(201).json(updatedUnity); 
-
+  console.log(req.body);
+  try{
+    const updatedUnity = await Unity.findOneAndUpdate({cnes : cnes}, req.body, {new : true});
+    return res.status(201).json(updatedUnity); 
+  }catch(err){
+    return res.status(400).json({message: "Error on update unity."})
+  }
 });
 
 router.delete('/:cnes', async (req, res) => {

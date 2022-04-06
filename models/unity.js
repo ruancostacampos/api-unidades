@@ -16,7 +16,6 @@ const UnitySchema = new mongoose.Schema({
   public_ip: {
     type: String,
     required: false,
-    select: false,
     lowercase: true
   },
 
