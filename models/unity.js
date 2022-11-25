@@ -1,4 +1,20 @@
 const mongoose = require('../database');
+
+const AnydeskSchema  = new mongoose.Schema({
+
+  name: {
+      type: String,
+      required: true
+  },
+
+  id: {
+      type: String,
+      length: 9,
+      required: true
+  }
+
+})
+
 const UnitySchema = new mongoose.Schema({
 
   name: {
@@ -6,14 +22,7 @@ const UnitySchema = new mongoose.Schema({
     required: true 
   },
 
-  network_ip: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true
-  },
-
-  public_ip: {
+  publicIp: {
     type: String,
     required: false,
     lowercase: true
@@ -23,23 +32,38 @@ const UnitySchema = new mongoose.Schema({
     type: String,
     required: [true, 'Insira um CNES.'],
     lenght: 7,
-    message : '{VALUE} não é um CNES válido.'
+    message : '{VALUE} não é um CNES válido.',
+    unique: true
   },
 
-  mega_email: {
+  megaEmail: {
     type: String,
-    requred: false,
+    required: false,
     lenght: 64
   },
 
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  lastSync: {
+    type: Number,
+    required: false
+  },
+
+  anydesk : [{
+    name: {
+      type: String,
+      required: true
+    },
+
+    id: {
+      type: String,
+      length: 9,
+      required: true
+    }
+  }]
 
 });
 
 
 const Unity = mongoose.model('Unity', UnitySchema);
+const Anydesk = mongoose.model('Anydesk', AnydeskSchema);
 
-module.exports = Unity;
+module.exports = Unity, Anydesk;

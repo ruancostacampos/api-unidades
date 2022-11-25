@@ -2,9 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
-const {auth} = require('express-openid-connect');
+const unityRouter = require('../routes/Unity')
 
-console.log(process.env.BASEURL);
 const app = express();
 
 app.use(bodyParser.json());
@@ -21,43 +20,14 @@ app.use((req, res, next) => {
     next();
 })
 
-//app.use('/api', privateRoute);
-require('../controllers/unityController')(app);
-
- 
-app.use(
-  auth({
-    issuerBaseURL: process.env.ISSUER,
-    baseURL: process.env.BASEURL,
-    clientID: process.env.CLIENTID,
-    secret: process.env.SECRET,
-  },)
-);
+app.use('/unity', unityRouter)
 
 
 
-function privateRoute (req, res, next){
-  try{
-    if(req.oidc.isAuthenticated()){
-      next();
-    }else{
-      res.status(401).json({message: 'Unauthorized'});
-      return;
-    }
-  }catch(err){ console.log(err) }
-}
-
-app.get('/', (req, res) => {
-  if(req.oidc.isAuthenticated()){
-    res.status(301).redirect(process.env.CROSSURL);
-    return;
-  }else{
-    res.status(301).redirect(`${process.env.BASEURL}/login`);
-    return;
-  }
-})
 
 
-app.listen(process.env.PORT || 4000);
+app.listen(process.env.PORT || 4000, () => {
+  console.log("Server running")
+});
 
 
