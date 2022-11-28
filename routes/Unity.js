@@ -1,5 +1,8 @@
 const express = require('express');
+const { ids } = require('webpack');
+const { findOne } = require('../models/unity');
 const Unity = require('../models/unity');
+const Anydesk = require('../models/unity')
 const router = express.Router();
 
 
@@ -82,6 +85,7 @@ router.delete('/:cnes', async (req, res) => {
 
 });
 
+//Rota que adiciona anydesk
 router.post('/:cnes/anydesk', async (req, res) => {
 
     const {cnes} = req.params;
@@ -89,24 +93,58 @@ router.post('/:cnes/anydesk', async (req, res) => {
 
     try{
 
+        const searchUnity = await Anydesk.findOne({"anydesk.id" : id})
+
+        if(searchUnity) return res.status(400).json(
+          {message: `O anydesk informado já existe em (${searchUnity.name}).`}
+        )
+
         const updatedUnity = await Unity.findOneAndUpdate(
-            {cnes},
-            {$push: {anydesk: {name, id}} },
-            {new: true}
+          {cnes}, 
+          {$addToSet : {anydesk: {name: name, id}} },
+          {new: true, runValidators: true} 
         )
 
         if(!updatedUnity){return res.status(404).json({message: "Não foi possível encontrar a unidade especificada."})}  
 
-        return res.status(200).json(updatedUnity);
+        return res.status(200).json(updatedUnity)
 
     }catch(err){
-        return res.status(200).json({message: err});
+        return res.status(400).json({message: err.message})
     }
 
 })
 
+router.put('/:cnes/anydesk/:id', async (req, res) => {
+    
+    const {cnes, id} = req.params;
+    const {name, id: newId} = req.body;
 
+    try{
 
+      if(!name && !newId)  return res.status(400).json(
+        {message: "É necessário informar no mínimo uma informação para alterar. (Nome ou ID)"}
+      )
+   
+      const updatedAnydesk = await Anydesk.findOneAndUpdate(
+        {"anydesk.id" : id},
+        {$set : {name, id: newId} } ,
+        {new: true, runValidators: true}
+      )
+
+      console.log(updatedAnydesk)
+  
+      if(updatedAnydesk) return res.status(200).json({message: "Anydesk atualizado com sucesso."})
+
+      if(!updatedAnydesk) return res.status(400).json(
+        {message: "Não foi encontrada nenhum anydesk com esse ID."}
+      )
+
+    }catch(err){
+      console.log(err)
+      return res.status(400).json({message: "Ocorreu um erro."})
+    }
+})
 
 module.exports = router;
 

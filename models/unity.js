@@ -9,7 +9,8 @@ const AnydeskSchema  = new mongoose.Schema({
 
   id: {
       type: String,
-      length: 9,
+      maxlength: 9,
+      minlength: 9,
       required: true
   }
 
@@ -47,18 +48,7 @@ const UnitySchema = new mongoose.Schema({
     required: false
   },
 
-  anydesk : [{
-    name: {
-      type: String,
-      required: true
-    },
-
-    id: {
-      type: String,
-      length: 9,
-      required: true
-    }
-  }]
+  anydesk : [AnydeskSchema]
 
 });
 
