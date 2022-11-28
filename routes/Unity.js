@@ -99,10 +99,11 @@ router.post('/:cnes/anydesk', async (req, res) => {
           {message: `O anydesk informado já existe em (${searchUnity.name}).`}
         )
 
+
         const updatedUnity = await Unity.findOneAndUpdate(
           {cnes}, 
-          {$addToSet : {anydesk: {name: name, id}} },
-          {new: true, runValidators: true} 
+          {$addToSet : {anydesk: {name: name, id}}},
+          {new: true, runValidators: true, anydesk: {}} 
         )
 
         if(!updatedUnity){return res.status(404).json({message: "Não foi possível encontrar a unidade especificada."})}  
@@ -115,24 +116,33 @@ router.post('/:cnes/anydesk', async (req, res) => {
 
 })
 
+//Rota que atualiza o anydesk
 router.put('/:cnes/anydesk/:id', async (req, res) => {
     
-    const {cnes, id} = req.params;
-    const {name, id: newId} = req.body;
+    const {cnes, id: targetID} = req.params
+    const {name, id} = req.body
+    
 
     try{
 
-      if(!name && !newId)  return res.status(400).json(
+      if(!name && !id)  return res.status(400).json(
         {message: "É necessário informar no mínimo uma informação para alterar. (Nome ou ID)"}
+      )
+
+      const searchUnity = await Anydesk.findOne({"anydesk.id" : id})
+
+      if(searchUnity) return res.status(400).json(
+        {message: `O anydesk informado já existe em (${searchUnity.name}).`}
       )
    
       const updatedAnydesk = await Anydesk.findOneAndUpdate(
-        {"anydesk.id" : id},
-        {$set : {name, id: newId} } ,
+        {"anydesk.id" : targetID},
+        {$set :  
+          {"anydesk.$.name" : name,
+           "anydesk.$.id" : id}
+        },
         {new: true, runValidators: true}
       )
-
-      console.log(updatedAnydesk)
   
       if(updatedAnydesk) return res.status(200).json({message: "Anydesk atualizado com sucesso."})
 
@@ -142,7 +152,7 @@ router.put('/:cnes/anydesk/:id', async (req, res) => {
 
     }catch(err){
       console.log(err)
-      return res.status(400).json({message: "Ocorreu um erro."})
+      return res.status(400).json({message: err.message})
     }
 })
 
