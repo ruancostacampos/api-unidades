@@ -24,6 +24,7 @@
     "jwks-rsa": "^2.0.5",
     "mime-types": "^2.1.35",
     "mongoose": "^6.2.3",
+    "puppeteer": "^19.3.0",
     "webpack-dev-server": "^4.7.4"
   },
   "devDependencies": {

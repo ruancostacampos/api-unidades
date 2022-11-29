@@ -156,5 +156,19 @@ router.put('/:cnes/anydesk/:id', async (req, res) => {
     }
 })
 
+router.get('/:cnes/anydesk', async (req, res) => {
+    
+  const {cnes} = req.params
+  
+  const searchUnity = await Anydesk.findOne({cnes}, {anydesk: {id: 1, name: 1}})
+
+  if(searchUnity === null) return res.status(400).json(
+    {message: "Não foram encotradas unidades com o ID informado."}
+  )
+
+  return res.status(200).json(searchUnity.anydesk)
+
+})
+
 module.exports = router;
 

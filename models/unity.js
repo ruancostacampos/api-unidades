@@ -1,20 +1,6 @@
 const mongoose = require('../database');
-
-const AnydeskSchema  = new mongoose.Schema({
-
-  name: {
-      type: String,
-      required: true
-  },
-
-  id: {
-      type: String,
-      maxlength: 9,
-      minlength: 9,
-      required: true
-  }
-
-})
+const Agent = require('../models/agent')
+const Anydesk = require('../models/anydesk')
 
 const UnitySchema = new mongoose.Schema({
 
@@ -48,12 +34,13 @@ const UnitySchema = new mongoose.Schema({
     required: false
   },
 
-  anydesk : [AnydeskSchema]
+  anydesk: [Anydesk.schema],
+
+  agent: [Agent.schema]
 
 });
 
 
 const Unity = mongoose.model('Unity', UnitySchema);
-const Anydesk = mongoose.model('Anydesk', AnydeskSchema);
 
-module.exports = Unity, Anydesk;
+module.exports = Unity;
