@@ -1,6 +1,6 @@
 const mongoose = require('../database');
-const Agent = require('../models/agent')
-const Anydesk = require('../models/anydesk')
+const Agent = require('./Agent')
+const Anydesk = require('./Anydesk')
 
 const UnitySchema = new mongoose.Schema({
 
@@ -34,9 +34,10 @@ const UnitySchema = new mongoose.Schema({
     required: false
   },
 
-  anydesk: [Anydesk.schema],
+  anydesks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Anydesk' }],
 
-  agent: [Agent.schema]
+
+  agents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Agent' }]
 
 });
 

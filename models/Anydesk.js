@@ -11,7 +11,8 @@ const AnydeskSchema  = new mongoose.Schema({
       type: String,
       maxlength: 9,
       minlength: 9,
-      required: true
+      required: true,
+      unique: true
   }
 
 })

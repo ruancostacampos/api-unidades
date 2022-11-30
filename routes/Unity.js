@@ -1,8 +1,8 @@
 const express = require('express');
 const { ids } = require('webpack');
-const { findOne } = require('../models/unity');
-const Unity = require('../models/unity');
-const Anydesk = require('../models/unity')
+const { findOne } = require('../models/Unity');
+const Unity = require('../models/Unity');
+const Anydesk = require('../models/Unity')
 const router = express.Router();
 
 
@@ -19,12 +19,11 @@ router.get(['/:cnes', '/'], async (req, res) => {
 
   unities = Unity.find(paramCnes, function (err, unities) {
     if(err) return res.status(400).json({message : "Ocorreu um erro."});
-
-    if(unities.length == 0) return res.status(201).json("Nenhuma unidade encontrada.");
-
+    if(unities.length == 0) return res.status(201).json({message: "Nenhuma unidade encontrada."});
     return res.status(201).json(unities);
+  })
 
-  });
+
 
 }); 
 

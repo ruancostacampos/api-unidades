@@ -4,14 +4,15 @@ const AgentSchema = new mongoose.Schema({
     
     name : {
         type: String,
-        maxlength: 35,
+        maxlength: 70,
         minlength: 6,
     },
 
     cpf : {
         type: String,
         maxlength: 11,
-        minlength: 11
+        minlength: 11,
+        unique: true
     },
 
     cns: {
