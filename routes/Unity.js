@@ -92,22 +92,30 @@ router.post('/:cnes/anydesk', async (req, res) => {
 
     try{
 
-        const searchUnity = await Anydesk.findOne({"anydesk.id" : id})
+       /* const searchUnity = await Anydesk.findOne({name, id})
 
-        if(searchUnity) return res.status(400).json(
+        console.log(searchUnity)
+
+        if(searchUnity !== null) return res.status(400).json(
           {message: `O anydesk informado já existe em (${searchUnity.name}).`}
-        )
+        ) */
+        
+        let anydesk = new Anydesk({name, id})
+        console.log(anydesk)
+        const createAnydesk = await Anydesk.create(anydesk)
+        
+        console.log('New anydesk: ' + createAnydesk)
 
-
-        const updatedUnity = await Unity.findOneAndUpdate(
+       /* const updatedUnity = await Unity.findOneAndUpdate(
           {cnes}, 
-          {$addToSet : {anydesk: {name: name, id}}},
+          {$addToSet : {anydesk: newAnydesk}},
           {new: true, runValidators: true, anydesk: {}} 
         )
 
         if(!updatedUnity){return res.status(404).json({message: "Não foi possível encontrar a unidade especificada."})}  
 
-        return res.status(200).json(updatedUnity)
+        return res.status(200).json(updatedUnity) */
+        return res.status(200).json(createAnydesk)
 
     }catch(err){
         return res.status(400).json({message: err.message})
