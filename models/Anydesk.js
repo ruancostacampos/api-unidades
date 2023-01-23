@@ -15,6 +15,9 @@ const AnydeskSchema  = new mongoose.Schema({
       unique: true
   }
 
+},
+{
+  collection: 'anydesk'
 })
 
 

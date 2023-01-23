@@ -2,48 +2,48 @@ const express = require('express');
 const { ids } = require('webpack');
 const { findOne } = require('../models/Unity');
 const Unity = require('../models/Unity');
-const Anydesk = require('../models/Unity')
+const Anydesk = require('../models/Anydesk')
 const router = express.Router();
 
 
 
 router.get(['/:cnes', '/'], async (req, res) => {
-  
+
   var paramCnes = null;
 
-  if(req.params.cnes){
-    paramCnes = {cnes: req.params.cnes}
-  }else{
+  if (req.params.cnes) {
+    paramCnes = { cnes: req.params.cnes }
+  } else {
     paramCnes = {}
   }
 
   unities = Unity.find(paramCnes, function (err, unities) {
-    if(err) return res.status(400).json({message : "Ocorreu um erro."});
-    if(unities.length == 0) return res.status(201).json({message: "Nenhuma unidade encontrada."});
+    if (err) return res.status(400).json({ message: "Ocorreu um erro." });
+    if (unities.length == 0) return res.status(201).json({ message: "Nenhuma unidade encontrada." });
     return res.status(201).json(unities);
   })
 
 
 
-}); 
+});
 
 
 // Rota que adiciona uma unidade
-router.post('/', async (req, res) => { 
+router.post('/', async (req, res) => {
 
 
-  const {name, publicIp, cnes, megaEmail} = req.body;
-  const unity = await Unity.find({cnes});
-  
-  if(unity != '') return res.status(200).json({message: "Já existe uma unidade cadastrada com esse CNES."});
-   
-  try{
+  const { name, publicIp, cnes, megaEmail } = req.body;
+  const unity = await Unity.find({ cnes });
 
-    const newUnity = await Unity.create({name, publicIp, cnes, megaEmail});
+  if (unity != '') return res.status(200).json({ message: "Já existe uma unidade cadastrada com esse CNES." });
+
+  try {
+
+    const newUnity = await Unity.create({ name, publicIp, cnes, megaEmail });
     return res.status(201).json(newUnity);
 
-  }catch(err){
-    return res.status(400).json({message : "Falha ao criar objeto, algum campo está preenchido incorretamente."});
+  } catch (err) {
+    return res.status(400).json({ error: "Falha ao criar objeto, algum campo está preenchido incorretamente." });
   }
 
 });
@@ -51,129 +51,134 @@ router.post('/', async (req, res) => {
 //Rota que atualiza dados da unidade
 router.put('/:cnes', async (req, res) => {
 
-    const {cnes} = req.params
+  const { cnes } = req.params
 
-    try{
-        
-        const updatedUnity = await Unity.findOneAndUpdate({cnes : cnes}, req.body, {new : true});
+  try {
 
-        if(!updatedUnity){return res.status(404).json({message: "Não foi possível encontrar a unidade especificada."})}  
+    const updatedUnity = await Unity.findOneAndUpdate({ cnes: cnes }, req.body, { new: true });
 
-        return res.status(201).json(updatedUnity); 
-    }catch(err){
-    
-        return res.status(400).json({message: "Erro ao atualizar a unidade, confira todos os campos."})
-    }
+    if (!updatedUnity) { return res.status(404).json({ message: "Não foi possível encontrar a unidade especificada." }) }
+
+    return res.status(201).json(updatedUnity);
+  } catch (err) {
+
+    return res.status(400).json({ error: "Erro ao atualizar a unidade, confira todos os campos." })
+  }
 
 });
 
 
 //Rota que remove unidade
 router.delete('/:cnes', async (req, res) => {
-  
-    const {cnes} = req.params;
 
-    const unity = Unity.deleteOne({cnes : cnes}, (err, result) =>{
+  const { cnes } = req.params;
 
-        if(err) return res.status(400).json({message: "Ocorreu um erro ao remover unidade."});
+  const unity = Unity.deleteOne({ cnes: cnes }, (err, result) => {
 
-        if(result.deletedCount > 0) return res.status(201).json({message: "Unidade removida com sucesso."});
+    if (err) return res.status(400).json({ error: "Ocorreu um erro ao remover unidade." });
 
-        return res.status(400).json({message: "Nenhuma unidade com o CNES informado."});
-    });
+    if (result.deletedCount > 0) return res.status(201).json({ message: "Unidade removida com sucesso." });
+
+    return res.status(400).json({ error: "Nenhuma unidade com o CNES informado." });
+  });
 
 });
 
-//Rota que adiciona anydesk
+// Add anydesk route
 router.post('/:cnes/anydesk', async (req, res) => {
+  const { cnes } = req.params;
+  const { name, id } = req.body;
 
-    const {cnes} = req.params;
-    const {name, id} = req.body;
+  try {
+    const searchUnity = await Unity.findOne({cnes})
 
-    try{
+    if(searchUnity === null) return res.status(400).json(
+      {error: 'Não existe unidade com o CNES informado.'}
+    )
 
-       /* const searchUnity = await Anydesk.findOne({name, id})
+    const searchAnydesk = await Anydesk.findOne({id})
+    
+    if(searchAnydesk !== null) return res.status(400).json(
+      { error: `O anydesk informado já existe em (${searchUnity.name}).` }
+    )
 
-        console.log(searchUnity)
+    const createdAnydesk = await Anydesk.create({ name, id })
 
-        if(searchUnity !== null) return res.status(400).json(
-          {message: `O anydesk informado já existe em (${searchUnity.name}).`}
-        ) */
-        
-        let anydesk = new Anydesk({name, id})
-        console.log(anydesk)
-        const createAnydesk = await Anydesk.create(anydesk)
-        
-        console.log('New anydesk: ' + createAnydesk)
+    const updatedUnity = await Unity.updateOne(
+      { cnes },
+      { $addToSet: { anydesks: createdAnydesk } },
+      { new: true, runValidators: true}
+    )
 
-       /* const updatedUnity = await Unity.findOneAndUpdate(
-          {cnes}, 
-          {$addToSet : {anydesk: newAnydesk}},
-          {new: true, runValidators: true, anydesk: {}} 
-        )
+    if (!updatedUnity) { return res.status(404).json({ error: "Não foi possível encontrar a unidade especificada." }) }
 
-        if(!updatedUnity){return res.status(404).json({message: "Não foi possível encontrar a unidade especificada."})}  
+    return res.status(200).json(updatedUnity)
 
-        return res.status(200).json(updatedUnity) */
-        return res.status(200).json(createAnydesk)
-
-    }catch(err){
-        return res.status(400).json({message: err.message})
-    }
+  } catch (err) {
+    return res.status(400).json({ message: err.message })
+  }
 
 })
 
 //Rota que atualiza o anydesk
 router.put('/:cnes/anydesk/:id', async (req, res) => {
+
+  const { cnes, id: targetID } = req.params
+  const { name, id } = req.body
+
+
+  try {
+
+    if (!name && !id) return res.status(400).json(
+      { error: "É necessário informar no mínimo uma informação para alterar. (Nome ou ID)" }
+    )
+
+    const beChanged = await Anydesk.findOne({id: targetID})
     
-    const {cnes, id: targetID} = req.params
-    const {name, id} = req.body
-    
+    if(!beChanged) return res.status(400).json(
+      {error: 'O anydesk original não existe em nenhuma unidade.'}
+    )
 
-    try{
+    const searchUnityWithNewId = await Anydesk.findOne({id})
 
-      if(!name && !id)  return res.status(400).json(
-        {message: "É necessário informar no mínimo uma informação para alterar. (Nome ou ID)"}
-      )
+    if (searchUnityWithNewId && id) return res.status(400).json(
+      { error: `O anydesk informado já existe em (${searchUnity.name}).` }
+    )
 
-      const searchUnity = await Anydesk.findOne({"anydesk.id" : id})
 
-      if(searchUnity) return res.status(400).json(
-        {message: `O anydesk informado já existe em (${searchUnity.name}).`}
-      )
-   
-      const updatedAnydesk = await Anydesk.findOneAndUpdate(
-        {"anydesk.id" : targetID},
-        {$set :  
-          {"anydesk.$.name" : name,
-           "anydesk.$.id" : id}
-        },
-        {new: true, runValidators: true}
-      )
-  
-      if(updatedAnydesk) return res.status(200).json({message: "Anydesk atualizado com sucesso."})
-
-      if(!updatedAnydesk) return res.status(400).json(
-        {message: "Não foi encontrada nenhum anydesk com esse ID."}
-      )
-
-    }catch(err){
-      console.log(err)
-      return res.status(400).json({message: err.message})
+    if(name){ 
+      beChanged.name = name
     }
+
+    if(id){
+      beChanged.id = id
+    }
+    
+    await beChanged.save()
+
+    if (beChanged) return res.status(200).json({ message: "Anydesk atualizado com sucesso." })
+
+    if (!beChanged) return res.status(400).json(
+      { error: "Não foi encontrada nenhum anydesk com esse ID." }
+    )
+
+  } catch (err) {
+    console.log(err)
+    return res.status(400).json({ error: err.message })
+  }
 })
 
 router.get('/:cnes/anydesk', async (req, res) => {
-    
-  const {cnes} = req.params
-  
-  const searchUnity = await Anydesk.findOne({cnes}, {anydesk: {id: 1, name: 1}})
 
-  if(searchUnity === null) return res.status(400).json(
-    {message: "Não foram encotradas unidades com o ID informado."}
+  const { cnes } = req.params
+
+  const searchUnity = await Unity.findOne({ cnes }).select({anydesks : 1}).populate('anydesks')
+
+  if (searchUnity === null) return res.status(400).json(
+    { message: "Não foram encotradas unidades com o ID informado." }
   )
 
-  return res.status(200).json(searchUnity.anydesk)
+  return res.status(200).json(searchUnity.anydesks)
 
 })
 
