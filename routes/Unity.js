@@ -9,20 +9,19 @@ const router = express.Router();
 
 router.get(['/:cnes', '/'], async (req, res) => {
 
-  var paramCnes = null;
+  var paramCnes = {};
 
   if (req.params.cnes) {
     paramCnes = { cnes: req.params.cnes }
-  } else {
-    paramCnes = {}
   }
-
-  unities = Unity.find(paramCnes, function (err, unities) {
-    if (err) return res.status(400).json({ message: "Ocorreu um erro." });
+  
+  query = await Unity.find().populate("anydesks").then((unities) => {
     if (unities.length == 0) return res.status(201).json({ message: "Nenhuma unidade encontrada." });
-    return res.status(201).json(unities);
+    return res.status(201).json(JSON.parse(JSON.stringify(unities)));
+  }).catch( (err) => {
+    console.log(err)
+    return res.status(400).json({ message: "Ocorreu um erro." });
   })
-
 
 
 });
@@ -112,7 +111,7 @@ router.post('/:cnes/anydesk', async (req, res) => {
 
     if (!updatedUnity) { return res.status(404).json({ error: "Não foi possível encontrar a unidade especificada." }) }
 
-    return res.status(200).json(updatedUnity)
+    return res.status(200).json({message: "AnyDesk adicionado com sucesso!"})
 
   } catch (err) {
     return res.status(400).json({ message: err.message })
